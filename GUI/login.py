@@ -1,7 +1,7 @@
 import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import messagebox
-
+from sign_up import SignUp
 class Login:
     def __init__(self, master):
         
@@ -55,8 +55,13 @@ class Login:
     def login(self):
         pass
     def sign_up(self):
-        pass
+        self.master.destroy()
+        root = tk.Tk()
+        signup_interface = SignUp(root)
+        root.mainloop()
 
+    def close_signup(self):
+        pass
     def open_chat_window(self):
         pass
 
