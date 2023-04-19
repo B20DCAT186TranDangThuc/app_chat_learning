@@ -1,0 +1,15 @@
+import tkinter as tk
+
+root = tk.Tk()
+
+# Tạo một PhotoImage object từ một file ảnh
+bg_image = tk.PhotoImage(file="nen.png")
+
+# Tạo một Label widget và gán background là ảnh
+label = tk.Label(root, image=bg_image, text="LogIn", fg="#ffffff", font=(), compound=tk.CENTER)
+label.pack()
+
+# Giữ reference đến PhotoImage object
+label.image = bg_image
+
+root.mainloop()

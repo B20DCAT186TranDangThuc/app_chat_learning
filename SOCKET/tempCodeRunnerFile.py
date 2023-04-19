@@ -1,0 +1,1 @@
+login.iconbitmap("icon.ico")
