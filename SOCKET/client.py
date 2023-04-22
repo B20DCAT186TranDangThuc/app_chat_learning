@@ -1,58 +1,88 @@
-import socket
-import sys 
-import threading
+import sys
 import tkinter as tk
 from tkinter import ttk
+import socket
+import GUI.login as login
+import GUI.win_chat as chat
+import GUI.sign_up as sign_up
+import GUI.find_chatmember as find_member
 
+import threading
 class ClientNode:
-    def __init__(self):
+    def __init__(self, master):
+        # connect to server
         self.node = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         port_and_ip = ('127.0.0.1', 12345)
         self.node.connect(port_and_ip)
 
-    def send_sms(self, SMS):
-        self.node.send(SMS.encode())
+        # create thread to receive message
+        self.thread = threading.Thread(target=self.receive_message)
+        self.thread.start()
 
-    def receive_sms(self):
-        while True:       
-            data = self.node.recv(1024).decode()
-            if data =="quit: success":
-                self.node.close()
-                break
-            print(data)
+        self.master = master
+        # render login page
+        self.login_page = login.Login(self.master, self)
+        self.master.mainloop()
 
-    def main(self):
+
+
+
+    def receive_message(self):
         while True:
-            message = input()
-            if input == "5$$":
-                self.node.close()
-                sys.exit()
+            try:
+                data = self.node.recv(1024).decode('utf-8')
+                print(data)
+                if data == "login: success":
+                    self.show_find_member()
+                elif data == "login: fail":
+                    self.login_page.show_error("Login fail")
+            except:
+                self.close()
                 break
-            self.send_sms(message)
 
-def create_login():
-    global login
-    login = tk.Tk()
-    login.title("Login")
-    login.geometry("400x400")
-    login.resizable(False, False)
-    login.configure(bg="#e6e6e6")
-    # login.iconbitmap("icon.ico")
-
-    ttk.Label(login, text="Login", font=("Arial", 20)).pack(pady=10)
-    ttk.Label(login, text="Username: ").pack(pady=5)
-    ttk.Entry(login, width=30).pack(pady=5)
-    ttk.Label(login, text="Password: ").pack(pady=5)
-    ttk.Entry(login, width=30).pack(pady=5)
-    ttk.Button(login, text="Login", command=login.destroy).pack(pady=10)
-    ttk.Button(login, text="Sign Up", command=login.destroy).pack(pady=10)
+    def send_message(self, message):
+        self.node.send(message.encode('utf-8'))
 
 
-    login.mainloop()
-# Client = ClientNode()
-# always_receive = threading.Thread(target=Client.receive_sms)
-# always_receive.daemon = True
-# always_receive.start()
-# Client.main()
 
-create_login()
+    # function to render gui (login, signup, chat, find member)
+    def open_signup(self):
+        self.master.destroy()
+        self.master = tk.Tk()
+        self.signup_page = sign_up.SignUp(self.master, self)
+
+    def show_find_member(self):
+        self.master.destroy()
+        self.master = tk.Tk()
+        self.find_member_page = find_member.FindMember(self.master, self)
+
+    def open_chat_window(self):
+        self.master.destroy()
+        self.master = tk.Tk()
+        self.chat_window = chat.ChatWindow(self.master, self)
+
+    def show_login(self):
+        self.master.destroy()
+        self.master = tk.Tk()
+        self.login_page = login.Login(self.master, self)
+    
+    def show_error(self, message):
+        self.login_page.show_error(message)
+    
+    def sign_up(self, username, password, fullname):
+        self.send_message(f"1$${username}__{password}__{fullname}")
+
+    def login(self, username, password):
+        self.send_message(f"2$${username}__{password}")
+
+    def find_member(self, username):
+        self.send_message(f"3$${username}")
+
+    def close(self):
+        self.node.close()
+        sys.exit()
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    client = ClientNode(root)

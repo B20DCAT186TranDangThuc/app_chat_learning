@@ -1,1 +1,0 @@
-self.signup_button.grid(row=3, column=1, columnspan=1, pady=20)

@@ -3,17 +3,18 @@ import tkinter.messagebox as tkMessageBox
 
 
 class SignUp:
-    def __init__(self, root):
+    def __init__(self, root, client):
 
+        self.client = client
         self.root = root
         root.title("Sign Up")
         # root.geometry("440x440")
         root.configure(bg='#333333')
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
-        x = (screen_width/2) - (440/2)
+        x = (screen_width/2) - (500/2)
         y = (screen_height/2) - (600/2)
-        root.geometry("%dx%d+%d+%d" % (440, 600, x, y))
+        root.geometry("%dx%d+%d+%d" % (500, 600, x, y))
 
         img_bg = tk.PhotoImage(file="signup.png")
         img_bg.subsample(2, 2)
@@ -37,6 +38,9 @@ class SignUp:
         self.sign_up_button = tk.Button(
             frame, text="Sign Up", bg="#1b0b54", fg="#FFFFFF", font=("Arial", 16), width=10, height=2, command=self.sign_up)
         
+        self.sign_up_back = tk.Button(
+            root, text="Back", bg="#1b0b54", fg="#FFFFFF", font=("Arial", 16), width=5, height=1, command=self.back)
+        
         
         # Placing widgets on the screen
         login_label.grid(row=0, column=0, columnspan=2, sticky="news")
@@ -46,9 +50,10 @@ class SignUp:
         self.password_entry.grid(row=2, column=1, pady=20)
         full_name_label.grid(row=3, column=0)
         self.full_name_entry.grid(row=3, column=1, pady=20)
-        self.sign_up_button.grid(row=4, column=0, columnspan=2, pady=20)
+        self.sign_up_button.grid(row=4, column=0, columnspan=2)
+        self.sign_up_back.place(x=0, y=0)
 
-        frame.pack(pady=40)
+        frame.pack(pady=50)
 
         # bấm enter để sign up
         self.root.bind("<Return>", self.sign_up)
@@ -78,12 +83,19 @@ class SignUp:
         self.sign_up_button.bind("<Down>", focus_next_entry)
             
     def sign_up(self, event=None):
-        pass
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        full_name = self.full_name_entry.get()
+        if username == "" or password == "" or full_name == "":
+            tkMessageBox.showerror("Error", "Please enter all required fields")
+        else:
+            self.client.sign_up(username, password, full_name)
 
-    
+    def back(self, event=None):
+        self.client.show_login()
     
 
-# if __name__ == "__main__":
-#     root = tk.Tk()
-#     chat_interface = SignUp(root)
-#     root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    chat_interface = SignUp(root)
+    root.mainloop()

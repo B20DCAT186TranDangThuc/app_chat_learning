@@ -2,8 +2,9 @@ from tkinter import *
 import socket, threading
 
 class ChatWindow:
-    def __init__(self, master):
+    def __init__(self, master, client):
         
+        self.client = client
         self.master = master
         master.title("Chat")
         master.geometry("440x440")
@@ -60,7 +61,7 @@ class ChatWindow:
     def update_canvas(self, event=None):
         pass
 
-if __name__ == "__main__":
-    root = Tk()
-    my_gui = ChatWindow(root)
-    root.mainloop()
+# if __name__ == "__main__":
+#     root = Tk()
+#     my_gui = ChatWindow(root)
+#     root.mainloop()
