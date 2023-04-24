@@ -122,11 +122,11 @@ class ServerNode:
         print(f"{self.connections[connection]} sent message to {username}: {message}")
     def find_member(self, connection, address, content):
         print(f"Finding member: {content}")
-        list_member = self.database.get_list_member(content)
+        list_member = self.database.findfind_member(content)
         for member in list_member:
             print(member)
-        # gửi thông báo tìm kiếm thành công đến client
-        connection.send('find_member: success'.encode(self.encoding))
+        
+        connection.send(f"find_member: {list_member}".encode(self.encoding))
 
     def quit(self, connection, address, content):
         print(f"Quitting: {connection.getpeername()}") #getpeername() trả về địa chỉ IP và cổng của client
