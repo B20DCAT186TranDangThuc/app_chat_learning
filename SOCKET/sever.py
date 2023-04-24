@@ -22,9 +22,10 @@ class ServerNode:
         self.request_register = '1' # Đăng ký tài khoản
         self.request_login = '2' # Đăng nhập
         self.request_send_message = '3' # Gửi tin nhắn
-        self.request_find_member = '4' # Tìm kiếm thành viên
+        self.request_find_member = '8' # Tìm kiếm thành viên
         self.request_quit = '5' # Thoát
         self.request_show_history = '6' # Xem lịch sử
+        self.logout = '7' # Đăng xuất
 
     def start(self):
         while True:
@@ -43,6 +44,7 @@ class ServerNode:
             try:
                 # Nhận tin nhắn từ client
                 data = connection.recv(1024).decode(self.encoding)
+                print(data)
                 # tách tin nhắn thành các phần theo $$ để lấy mã kí tự và nội dung
                 data = data.split('$$')
                 request = data[0] # Mã kí tự
@@ -59,6 +61,8 @@ class ServerNode:
                     self.quit(connection, address, content)
                 elif request == self.request_show_history:
                     self.show_history(connection, address, content)
+                elif request == self.logout:
+                    self.logout(connection, address, content)
             except Exception as e:
                 print(f"{address} disconnected")
                 connection.close()
@@ -118,6 +122,11 @@ class ServerNode:
         print(f"{self.connections[connection]} sent message to {username}: {message}")
     def find_member(self, connection, address, content):
         print(f"Finding member: {content}")
+        list_member = self.database.get_list_member(content)
+        for member in list_member:
+            print(member)
+        # gửi thông báo tìm kiếm thành công đến client
+        connection.send('find_member: success'.encode(self.encoding))
 
     def quit(self, connection, address, content):
         print(f"Quitting: {connection.getpeername()}") #getpeername() trả về địa chỉ IP và cổng của client
@@ -134,6 +143,11 @@ class ServerNode:
         # Gửi lịch sử đến client
         connection.send(f"history: {history}".encode(self.encoding))
         print(f"Showing history of {self.connections[connection]} and {content}")
+    
+    def logout(self, connection, address, content):
+        # chỉ xóa tên người dùng trong danh sách kết nối
+        self.connections[connection] = None
+        connection.send('logout: success'.encode(self.encoding))
 
     def call_user_for_database(self, username):
         # Lấy thông tin của username từ database

@@ -87,6 +87,7 @@ class Client:
         self.master.destroy()
         self.master = tk.Tk()
         self.login_object = Login(self.master, self)
+        
 if __name__ == "__main__":
     root = tk.Tk()
     client = Client(root)

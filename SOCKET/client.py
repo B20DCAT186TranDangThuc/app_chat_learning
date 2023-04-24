@@ -32,10 +32,7 @@ class ClientNode:
             try:
                 data = self.node.recv(1024).decode('utf-8')
                 print(data)
-                if data == "login: success":
-                    self.show_find_member()
-                elif data == "login: fail":
-                    self.login_page.show_error("Login fail")
+                self.spit_message(data)
             except:
                 self.close()
                 break
@@ -43,7 +40,14 @@ class ClientNode:
     def send_message(self, message):
         self.node.send(message.encode('utf-8'))
 
-
+    def spit_message(self, message):
+        # split message from server
+        message = message.split(': ')
+        if message[0] == 'login':
+            if message[1] == 'success':
+                self.show_find_member()
+            else:
+                self.show_error(message[1])
 
     # function to render gui (login, signup, chat, find member)
     def open_signup(self):

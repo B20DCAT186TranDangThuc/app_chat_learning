@@ -61,7 +61,7 @@ class ChatWindow:
     def update_canvas(self, event=None):
         pass
 
-# if __name__ == "__main__":
-#     root = Tk()
-#     my_gui = ChatWindow(root)
-#     root.mainloop()
+if __name__ == "__main__":
+    root = Tk()
+    my_gui = ChatWindow(root)
+    root.mainloop()

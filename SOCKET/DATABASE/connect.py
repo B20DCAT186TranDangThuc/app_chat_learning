@@ -68,6 +68,11 @@ class DatabaseConnector:
         query = f"SELECT * FROM mesagers WHERE (sender_id = {sender_id} AND receiver_id = {receiver_id}) OR (sender_id = {receiver_id} AND receiver_id = {sender_id}) ORDER BY message_date ASC;"
         results = self.select_query(query)
         return results
+    
+    def findfind_member(self, fullname):
+        query = f"SELECT username, fullname FROM users WHERE fullname LIKE '%{fullname}%';"
+        results = self.select_query(query)
+        return results
 # # # Example usage:
 
 
@@ -75,6 +80,10 @@ class DatabaseConnector:
 
 # database = DatabaseConnector('127.0.0.1', 'root', '123456789', 'chatbox')
 # database.connect()
+
+# list_user = database.findfind_member('thuc')
+# for i in list_user:
+#     print(i)
 
 # history = database.get_history(1, 2)
 # for i in history:
