@@ -108,6 +108,9 @@ class ServerNode:
             print(f"Login {username} failed")
 
     def send_message(self, connection, address, content):
+
+
+
         # content là thông tin tin nhắn của client: username__message
         # tách thông tin tin nhắn thành các phần theo __ để lấy username, message
         content = content.split('__')
@@ -126,6 +129,7 @@ class ServerNode:
         # gửi thông điệp thành công đến client
         connection.send('send_message: success'.encode(self.encoding))
         print(f"{self.connections[connection]} sent message to {username}: {message}")
+    
     def find_member(self, connection, address, content):
         print(f"Finding member: {content}")
         list_member = self.database.findfind_member(content)
