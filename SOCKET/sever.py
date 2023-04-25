@@ -63,11 +63,17 @@ class ServerNode:
                     self.show_history(connection, address, content)
                 elif request == self.logout:
                     self.logout(connection, address, content)
+                else: 
+                    self.send_error(connection, address, content)
             except Exception as e:
                 print(f"{address} disconnected")
                 connection.close()
                 break
         
+
+    def send_error(self, connection, address, content):
+        connection.send('error'.encode(self.encoding))
+
     def register(self, connection, address, content):
         # content là thông tin đăng ký của client: username__password__fullname
         # tách thông tin đăng ký thành các phần theo __ để lấy username, password, fullname

@@ -1,5 +1,6 @@
 import mysql.connector
 
+
 class DatabaseConnector:
     def __init__(self, host, user, password, database):
         self.host = host
@@ -37,13 +38,14 @@ class DatabaseConnector:
         self.cursor.execute(query, parameters)
         self.connection.commit()
 # ------------------ những tính năng đi kèm để xử lý bên server ------------------
+
     def check_username(self, username):
         query = f"SELECT username FROM users WHERE username = '{username}';"
         results = self.select_query(query)
         if results:
             return True
         return False
-    
+
     def add_user(self, username, password, fullname):
         query = 'INSERT INTO users (username, password, fullname) VALUES (%s, %s, %s)'
         self.insert_query(query, (username, password, fullname))
@@ -54,7 +56,7 @@ class DatabaseConnector:
         if results:
             return True
         return False
-    
+
     def get_user(self, username):
         query = f"SELECT user_id, username, fullname FROM users WHERE username = '{username}';"
         results = self.select_query(query)
@@ -65,10 +67,10 @@ class DatabaseConnector:
         self.insert_query(query, (sender_id, receiver_id, message, time))
 
     def get_history(self, sender_id, receiver_id):
-        query = f"SELECT * FROM mesagers WHERE (sender_id = {sender_id} AND receiver_id = {receiver_id}) OR (sender_id = {receiver_id} AND receiver_id = {sender_id}) ORDER BY message_date ASC;"
+        query = f"SELECT Users1.fullname AS sender_name, Users2.fullname AS receiver_name, Mesagers.message_content FROM Mesagers JOIN Users AS Users1 ON Mesagers.sender_id = Users1.user_id JOIN Users AS Users2 ON Mesagers.receiver_id = Users2.user_id WHERE Mesagers.sender_id = {sender_id} AND Mesagers.receiver_id = {receiver_id} OR Mesagers.sender_id = {receiver_id} AND Mesagers.receiver_id = {sender_id} ORDER BY Mesagers.message_date ASC;"
         results = self.select_query(query)
         return results
-    
+
     def findfind_member(self, fullname):
         query = f"SELECT username, fullname FROM users WHERE fullname LIKE '%{fullname}%';"
         results = self.select_query(query)
@@ -81,9 +83,9 @@ class DatabaseConnector:
 # database = DatabaseConnector('127.0.0.1', 'root', '123456789', 'chatbox')
 # database.connect()
 
-# list_user = database.findfind_member('thuc')
-# for i in list_user:
-#     print(i)
+# # list_user = database.findfind_member('thuc')
+# # for i in list_user:
+# #     print(i)
 
 # history = database.get_history(1, 2)
 # for i in history:

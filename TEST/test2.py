@@ -9,6 +9,10 @@ port_and_ip = ('127.0.0.1', 12345)
 
 request_frame = None
 
+User_name = None
+User_pass = None
+
+list_history_message = None
 
 def creat_login(root):
     del_winget(root)
@@ -77,7 +81,11 @@ def create_signup(root):
 
 def create_winchat(root, item):
     del_winget(root)
-    print(item)
+    # get history message
+
+
+    NODE.send(f"6$${item[0]}".encode())
+
     frame_header = tk.Frame(root, bg="#FF3399", height=50)
     frame_header.pack(fill=tk.X)
     back_button = tk.Button(frame_header, text="Back", bg="#FF3399", fg="#FFFFFF", font=(
@@ -93,6 +101,7 @@ def create_winchat(root, item):
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
     # create a canvas and attach it to the message frame
+    global canvas
     canvas = tk.Canvas(frame, yscrollcommand=scrollbar.set)
     canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
@@ -100,14 +109,16 @@ def create_winchat(root, item):
     scrollbar.config(command=canvas.yview)
 
     # create a frame inside the canvas to contain messages
+    global message_canvas
     message_canvas = tk.Frame(canvas)
     canvas.create_window((0, 0), window=message_canvas, anchor=tk.NW)
 
     frame2 = tk.Frame(bg='#333333', width=400, height=100)
+    global message_entry
     message_entry = tk.Entry(
         frame2, font=("Arial", 25), width=15, bd=0, highlightthickness=0)
     send_button = tk.Button(
-        frame2, text="Send", bg="#FF3399", fg="#FFFFFF", font=("Arial", 16), height=1, command=lambda: send_message())
+        frame2, text="Send", bg="#FF3399", fg="#FFFFFF", font=("Arial", 16), height=1, command=lambda: send_message(item[0]))
 
     message_entry.grid(row=0, column=0)
     send_button.grid(row=0, column=1, padx=(20, 0))
@@ -117,8 +128,14 @@ def create_winchat(root, item):
     message_entry.focus()
 
     # Enter để gửi message
-    root.bind("<Return>", lambda x: send_message())
+    root.bind("<Return>", lambda x: send_message(item[0]))
 
+    # render message from history
+    for message in list_history_message:
+        if message[1] != item[1]:
+            render_message(item[1], message[2], "#cccccc")
+        else:
+            render_message("Bạn", message[2], "#FF3399")
 
 def create_find_friend(root):
     del_winget(root)
@@ -148,9 +165,32 @@ def create_find_friend(root):
 # handle event
 
 
+def send_message(username):
+
+    print(username)
+    message = message_entry.get()
+    # gửi message lên server
+    NODE.send(f"3$${username}__{message}".encode('utf-8'))
+
+    # hiển thị message
+    message_entry.delete(0, tk.END)
+    render_message("Bạn", message, "#FF3399")
+
+
+def render_message(name, message, color):
+    def update_canvas(event=None):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+
+    tk.Label(message_canvas, text=f"{name}: {message}", bg=f"{color}",
+             fg="#FFFFFF", font=("Arial", 16), padx=20, pady=10, wraplength=200).pack(pady=10, anchor="w")
+
+    canvas.after_idle(update_canvas)
+    canvas.after_idle(lambda: canvas.yview_moveto(1))
+
+
 def search_user(name, request_frame):
     del_winget(request_frame)
-    # gửi tên người dùng cần tìm 
+    # gửi tên người dùng cần tìm
     if name:
         NODE.send(f"8$${name}".encode('utf-8'))
 
@@ -159,6 +199,10 @@ def login(root, user_entry, pass_entry):
     username = user_entry.get()
     password = pass_entry.get()
     NODE.send(f"2$${username}__{password}".encode('utf-8'))
+    global User_name
+    User_name = username
+    global User_pass
+    User_pass = password
 
 
 def del_winget(root):
@@ -179,12 +223,15 @@ def signup(user_entry, pass_entry, fullname_entry):
 def render_member(list_str):
     result = eval(list_str)
     if len(result) == 0:
-        label = tk.Label(request_frame, text="Không tìm thấy kết quả", font=("Arial", 16))
+        label = tk.Label(
+            request_frame, text="Không tìm thấy kết quả", font=("Arial", 16))
         label.pack(pady=20)
     for i, item in enumerate(result):
-        friend_button = tk.Button(request_frame, text=item[1], width=20, height=2, font=(
-            "Arial", 10), command=lambda x_item=item: create_winchat(root,x_item), anchor="w", justify="left", padx=20)
-        friend_button.pack(padx=20, pady=10)
+        if item[0] != User_name:
+            friend_button = tk.Button(request_frame, text=item[1], width=20, height=2, font=(
+                "Arial", 10), command=lambda x_item=item: create_winchat(root, x_item), anchor="w", justify="left", padx=20)
+            friend_button.pack(padx=20, pady=10)
+
 
 def receive_message(node):
     while True:
@@ -196,7 +243,8 @@ def receive_message(node):
                 if list_request[1] == "success":
                     create_find_friend(root)
                 else:
-                    messagebox.showerror("Lỗi", "Tài khoản hoặc mật khẩu không đúng")
+                    messagebox.showerror(
+                        "Lỗi", "Tài khoản hoặc mật khẩu không đúng")
             if list_request[0] == "register":
                 if list_request[1] == "success":
                     messagebox.showinfo("Thông báo", "Đăng ký thành công")
@@ -204,6 +252,18 @@ def receive_message(node):
                     messagebox.showerror("Lỗi", "Tài khoản đã tồn tại")
             if list_request[0] == "find_member":
                 render_member(list_request[1])
+            if list_request[0] == "message":
+                # list_request[2] là tin nhắn
+                # list_request[1] là người gửi
+                # hiển thị tin nhắn lên màn hình chat
+                render_message(list_request[1], list_request[2], "#cccccc")
+            if list_request[0] == "history":
+                # chuyển list_message[1] thành list
+                global list_history_message 
+                list_history_message = eval(list_request[1])
+                    
+
+        
         except Exception as e:
             print(e)
             break
